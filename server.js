@@ -29,6 +29,68 @@ function getKey(header, callback){
 
 const PORT = process.env.PORT || 3001;
 
+//--------------
+
+
+const mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true, useUnifiedTopology: true});
+
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('connected to mongo');
+});
+
+//-----------------bringing in User model and seeding db-----------
+
+const Books = require('./modules/Books.js');
+
+// let newBook1 = new Books({
+//   name: 'book1',
+//   description: 'fancy book',
+//   status: 'yep',
+//   email: 'plaurion1989@gmail.com',
+  
+// });
+// let newBook2 = new Books({
+//   name: 'book2',
+//   description: 'regular book',
+//   status: 'yep',
+//   email: 'plaurion1989@gmail.com',
+// });
+// let newBook3 = new Books({
+//   name: 'book3',
+//   description: 'bad book',
+//   status: 'nope',
+//   email: 'plaurion1989@gmail.com',
+// });
+
+Books.save( (err, bookDataFromMongo) => {
+  console.log('saved a book');
+  console.log(bookDataFromMongo);
+});
+
+
+//---------------Books route?  i hope... ----------------------
+
+app.get('/books', (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, getKey, {}, function(err, user) {
+    if(err) {
+      res.status(500).send('invalid token');
+    } else {
+      // find the books that belong to the user with that email address
+      let userEmail = user.email;
+      Books.find({email: userEmail}, (err, books) => {
+        console.log(books);
+        res.send(books);
+      });
+    }
+  });
+})
+
+
 app.get('/test', (req, res) => {
 
   // TODO: 
