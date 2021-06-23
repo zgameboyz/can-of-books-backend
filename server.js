@@ -46,28 +46,38 @@ db.once('open', function() {
 
 const Books = require('./modules/Books.js');
 
-// let newBook1 = new Books({
-//   name: 'book1',
-//   description: 'fancy book',
-//   status: 'yep',
-//   email: 'plaurion1989@gmail.com',
-  
-// });
-// let newBook2 = new Books({
-//   name: 'book2',
-//   description: 'regular book',
-//   status: 'yep',
-//   email: 'plaurion1989@gmail.com',
-// });
-// let newBook3 = new Books({
-//   name: 'book3',
-//   description: 'bad book',
-//   status: 'nope',
-//   email: 'plaurion1989@gmail.com',
-// });
+let newBook1 = new Books({
+  name: 'book1',
+  description: 'fancy book',
+  status: 'yep',
+  email: 'plaurion1989@gmail.com',
+});
+newBook1.save( (err, bookDataFromMongo) => {
+  console.log('saved book 1');
+  console.log(bookDataFromMongo);
+});
 
-Books.save( (err, bookDataFromMongo) => {
-  console.log('saved a book');
+
+let newBook2 = new Books({
+  name: 'book2',
+  description: 'regular book',
+  status: 'yep',
+  email: 'plaurion1989@gmail.com',
+});
+newBook2.save( (err, bookDataFromMongo) => {
+  console.log('saved book 2');
+  console.log(bookDataFromMongo);
+});
+
+
+let newBook3 = new Books({
+  name: 'book3',
+  description: 'bad book',
+  status: 'nope',
+  email: 'plaurion1989@gmail.com',
+});
+newBook3.save( (err, bookDataFromMongo) => {
+  console.log('saved book 3');
   console.log(bookDataFromMongo);
 });
 
