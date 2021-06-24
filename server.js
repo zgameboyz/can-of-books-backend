@@ -6,7 +6,9 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
+const app = express();
 app.use(express.json());
+app.use(cors());
 
 
 
@@ -17,8 +19,6 @@ const client = jwksClient({
 
 })
 
-const app = express();
-app.use(cors());
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, function (err, key) {
@@ -117,6 +117,7 @@ app.post('/books', (req, res) => {
       });
     }
   });
+});
 
   app.delete('/books/:id', (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
@@ -132,6 +133,7 @@ app.post('/books', (req, res) => {
           })
       }
     });
+  });
 
 
 // app.get('/test', (req, res) => {
@@ -147,9 +149,9 @@ app.post('/books', (req, res) => {
 //       res.send(user);
 //     }
 //   }
-    // jsonwebtoken dock - https://www.npmjs.com/package/jsonwebtoken
-    // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
-  );
-});
+//     // jsonwebtoken dock - https://www.npmjs.com/package/jsonwebtoken
+//     // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
+//   );
+// });
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
