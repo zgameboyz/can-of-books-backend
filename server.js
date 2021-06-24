@@ -3,33 +3,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
-
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-
-
-const client = jwksClient({
-
-  jwksUri: 'https://dev-qttzuf0f.us.auth0.com/.well-known/jwks.json'
-
-
-})
-
-
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, function (err, key) {
-    var signingKey = key.publicKey || key.rsaPublicKey;
-    callback(null, signingKey);
-  });
-}
-
+let bookHandler = require('./bookHandler.js');
 const PORT = process.env.PORT || 3001;
 
-//--------------
+//--------------mongo/mongoose connectioon setup-----------------
 
 
 const mongoose = require('mongoose');
@@ -42,116 +23,67 @@ db.once('open', function () {
   console.log('connected to mongo');
 });
 
-//-----------------bringing in User model and seeding db-----------
-
-const Books = require('./modules/Books.js');
-
-// let newBook1 = new Books({
-//   name: 'book1',
-//   description: 'fancy book',
-//   status: 'yep',
-//   email: 'plaurion1989@gmail.com',
-// });
-// newBook1.save( (err, bookDataFromMongo) => {
-//   console.log('saved book 1');
-//   console.log(bookDataFromMongo);
-// });
+//---------------------Route Handler--------------------------
 
 
-// let newBook2 = new Books({
-//   name: 'book2',
-//   description: 'regular book',
-//   status: 'yep',
-//   email: 'plaurion1989@gmail.com',
-// });
-// newBook2.save( (err, bookDataFromMongo) => {
-//   console.log('saved book 2');
-//   console.log(bookDataFromMongo);
-// });
+app.get('/books', bookHandler.getBooks);
+app.post('/books', bookHandler.addBook);
+app.delete('/books/:id', bookHandler.deleteBook);
+app.put('/books/:id', bookHandler.updateBook);
 
 
-// let newBook3 = new Books({
-//   name: 'book3',
-//   description: 'bad book',
-//   status: 'nope',
-//   email: 'plaurion1989@gmail.com',
-// });
-// newBook3.save( (err, bookDataFromMongo) => {
-//   console.log('saved book 3');
-//   console.log(bookDataFromMongo);
-// });
+//-----------------------Old Book Routes--------------------------
 
-
-//---------------Books route?  i hope... ----------------------
-
-app.get('/books', (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
-  jwt.verify(token, getKey, {}, function (err, user) {
-    if (err) {
-      res.status(500).send('invalid token');
-    } else {
-      // find the books that belong to the user with that email address
-      let userEmail = user.email;
-      Books.find({ email: userEmail }, (err, books) => {
-        console.log(books);
-        res.send(books);
-      });
-    }
-  });
-})
-
-app.post('/books', (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
-  jwt.verify(token, getKey, {}, function (err, user) {
-    if (err) {
-      res.status(500).send('invalid token');
-    } else {
-      const newBook = new Books({
-        name: req.body.name,
-        description: req.body.description,
-        status: req.body.status,
-        email: user.email
-      });
-      newBook.save((err, saveBookData) => {
-        res.send(saveBookData);
-      });
-    }
-  });
-});
-
-  app.delete('/books/:id', (req, res) => {
-    const token = req.headers.authorization.split(' ')[1];
-    jwt.verify(token, getKey, {}, function (err, user) {
-      if (err) {
-        res.status(500).send('invalid token');
-      } else {
-        let bookId = req.params.id;
-        Books.deleteOne({ _id: bookId, email: user.email })
-          .then(deleteBookData => {
-            console.log(deleteBookData);
-            res.send('burnt the book');
-          })
-      }
-    });
-  });
-
-
-// app.get('/test', (req, res) => {
-
-//   // TODO: 
-//   // STEP 1: get the jwt from the headers
+// app.get('/books', (req, res) => {
 //   const token = req.headers.authorization.split(' ')[1];
-//   // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
 //   jwt.verify(token, getKey, {}, function (err, user) {
 //     if (err) {
 //       res.status(500).send('invalid token');
 //     } else {
-//       res.send(user);
+//       // find the books that belong to the user with that email address
+//       let userEmail = user.email;
+//       Books.find({ email: userEmail }, (err, books) => {
+//         console.log(books);
+//         res.send(books);
+//       });
 //     }
-//   }
-//     // jsonwebtoken dock - https://www.npmjs.com/package/jsonwebtoken
-//     // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
-//   );
+//   });
+// })
+
+// app.post('/books', (req, res) => {
+//   const token = req.headers.authorization.split(' ')[1];
+//   jwt.verify(token, getKey, {}, function (err, user) {
+//     if (err) {
+//       res.status(500).send('invalid token');
+//     } else {
+//       const newBook = new Books({
+//         name: req.body.name,
+//         description: req.body.description,
+//         status: req.body.status,
+//         email: user.email
+//       });
+//       newBook.save((err, saveBookData) => {
+//         res.send(saveBookData);
+//       });
+//     }
+//   });
 // });
+
+//   app.delete('/books/:id', (req, res) => {
+//     const token = req.headers.authorization.split(' ')[1];
+//     jwt.verify(token, getKey, {}, function (err, user) {
+//       if (err) {
+//         res.status(500).send('invalid token');
+//       } else {
+//         let bookId = req.params.id;
+//         Books.deleteOne({ _id: bookId, email: user.email })
+//           .then(deleteBookData => {
+//             console.log(deleteBookData);
+//             res.send('burnt the book');
+//           })
+//       }
+//     });
+//   });
+
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
